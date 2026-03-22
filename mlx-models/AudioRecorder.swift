@@ -14,30 +14,27 @@ final class AudioRecorder: NSObject {
 
     func startRecording() async throws -> URL {
         try await requestMicrophoneAccessIfNeeded()
+        let candidates = recordingCandidates()
 
-        let targetURL = FileManager.default.temporaryDirectory
-            .appendingPathComponent("recording-\(UUID().uuidString)")
-            .appendingPathExtension("wav")
+        for candidate in candidates {
+            do {
+                let recorder = try AVAudioRecorder(url: candidate.url, settings: candidate.settings)
+                recorder.isMeteringEnabled = true
+                recorder.prepareToRecord()
 
-        let settings: [String: Any] = [
-            AVFormatIDKey: kAudioFormatLinearPCM,
-            AVSampleRateKey: 16_000,
-            AVNumberOfChannelsKey: 1,
-            AVLinearPCMBitDepthKey: 16,
-            AVLinearPCMIsBigEndianKey: false,
-            AVLinearPCMIsFloatKey: false
-        ]
+                guard recorder.record() else {
+                    continue
+                }
 
-        let recorder = try AVAudioRecorder(url: targetURL, settings: settings)
-        recorder.prepareToRecord()
-
-        guard recorder.record() else {
-            throw AudioRecorderError.couldNotStart
+                self.recorder = recorder
+                outputURL = candidate.url
+                return candidate.url
+            } catch {
+                continue
+            }
         }
 
-        self.recorder = recorder
-        outputURL = targetURL
-        return targetURL
+        throw AudioRecorderError.couldNotStart
     }
 
     func stopRecording() throws -> URL {
@@ -50,6 +47,36 @@ final class AudioRecorder: NSObject {
 
         self.outputURL = nil
         return outputURL
+    }
+
+    func normalizedPowerLevel() -> Double {
+        guard let recorder else { return 0 }
+
+        recorder.updateMeters()
+        let averagePower = recorder.averagePower(forChannel: 0)
+        let minDb: Float = -50
+
+        if averagePower <= minDb {
+            return 0
+        }
+
+        if averagePower >= 0 {
+            return 1
+        }
+
+        return Double((averagePower - minDb) / abs(minDb))
+    }
+
+    func averagePowerLevel() -> Float {
+        guard let recorder else { return -160 }
+        recorder.updateMeters()
+        return recorder.averagePower(forChannel: 0)
+    }
+
+    func peakPowerLevel() -> Float {
+        guard let recorder else { return -160 }
+        recorder.updateMeters()
+        return recorder.peakPower(forChannel: 0)
     }
 
     private func requestMicrophoneAccessIfNeeded() async throws {
@@ -66,6 +93,39 @@ final class AudioRecorder: NSObject {
         @unknown default:
             throw AudioRecorderError.permissionDenied
         }
+    }
+
+    private func recordingCandidates() -> [(url: URL, settings: [String: Any])] {
+        let temp = FileManager.default.temporaryDirectory
+        let id = UUID().uuidString
+
+        return [
+            (
+                url: temp
+                    .appendingPathComponent("recording-\(id)")
+                    .appendingPathExtension("m4a"),
+                settings: [
+                    AVFormatIDKey: kAudioFormatMPEG4AAC,
+                    AVSampleRateKey: 44_100,
+                    AVNumberOfChannelsKey: 1,
+                    AVEncoderAudioQualityKey: AVAudioQuality.high.rawValue,
+                    AVEncoderBitRateKey: 96_000
+                ]
+            ),
+            (
+                url: temp
+                    .appendingPathComponent("recording-\(id)")
+                    .appendingPathExtension("caf"),
+                settings: [
+                    AVFormatIDKey: kAudioFormatLinearPCM,
+                    AVSampleRateKey: 44_100,
+                    AVNumberOfChannelsKey: 1,
+                    AVLinearPCMBitDepthKey: 16,
+                    AVLinearPCMIsBigEndianKey: false,
+                    AVLinearPCMIsFloatKey: false
+                ]
+            )
+        ]
     }
 }
 

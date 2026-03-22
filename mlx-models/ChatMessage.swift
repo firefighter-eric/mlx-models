@@ -17,5 +17,19 @@ struct ChatMessage: Identifiable {
     let id = UUID()
     let role: ChatMessageRole
     let text: String
+    let audioURL: URL?
+    let allowsPlayback: Bool
     let createdAt = Date()
+
+    init(
+        role: ChatMessageRole,
+        text: String,
+        audioURL: URL? = nil,
+        allowsPlayback: Bool = false
+    ) {
+        self.role = role
+        self.text = text
+        self.audioURL = audioURL
+        self.allowsPlayback = allowsPlayback
+    }
 }

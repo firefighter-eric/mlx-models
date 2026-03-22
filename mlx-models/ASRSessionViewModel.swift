@@ -6,20 +6,29 @@
 //
 
 import Combine
+import AppKit
+import AVFoundation
 import Foundation
 import SwiftUI
 
 @MainActor
-final class ASRSessionViewModel: ObservableObject {
+final class ASRSessionViewModel: NSObject, ObservableObject, NSSoundDelegate {
     @Published var messages: [ChatMessage] = []
     @Published var isFileImporterPresented = false
     @Published private(set) var sessionState: ASRSessionState = .loadingModel
     @Published private(set) var modelReady = false
     @Published private(set) var inputSource: ASRInputSource = .idle
     @Published private(set) var lastError: String?
+    @Published private(set) var playingMessageID: UUID?
+    @Published private(set) var recordingLevel: Double = 0
+    @Published private(set) var recordingAveragePower: Float = -160
+    @Published private(set) var recordingPeakPower: Float = -160
+    @Published private(set) var recordingPeakHoldPower: Float = -160
 
     private let service: ASRService
     private let audioRecorder: AudioRecorder
+    private var audioPlayer: NSSound?
+    private var recordingMeterTask: Task<Void, Never>?
 
     init(
         service: ASRService = ASRService(),
@@ -27,6 +36,7 @@ final class ASRSessionViewModel: ObservableObject {
     ) {
         self.service = service
         self.audioRecorder = audioRecorder ?? AudioRecorder()
+        super.init()
 
         Task {
             await prepareModel()
@@ -88,6 +98,7 @@ final class ASRSessionViewModel: ObservableObject {
     }
 
     func clearMessages() {
+        stopPlayback()
         messages.removeAll()
         lastError = nil
     }
@@ -114,6 +125,55 @@ final class ASRSessionViewModel: ObservableObject {
         }
     }
 
+    func togglePlayback(for message: ChatMessage) {
+        guard message.allowsPlayback, let audioURL = message.audioURL else { return }
+
+        if playingMessageID == message.id {
+            stopPlayback()
+            return
+        }
+
+        do {
+            stopPlayback()
+
+            let attributes = try FileManager.default.attributesOfItem(atPath: audioURL.path)
+            guard let fileSize = attributes[.size] as? NSNumber, fileSize.int64Value > 0 else {
+                throw PlaybackError.emptyFile
+            }
+
+            let asset = AVURLAsset(url: audioURL)
+            let durationSeconds = CMTimeGetSeconds(asset.duration)
+
+            guard let player = NSSound(contentsOf: audioURL, byReference: false) else {
+                throw PlaybackError.unreadableFile
+            }
+
+            player.delegate = self
+            player.volume = 1.0
+
+            guard player.play() else {
+                throw PlaybackError.couldNotStart
+            }
+
+            audioPlayer = player
+            playingMessageID = message.id
+            appendSystemMessage(
+                String(
+                    format: "开始播放：%@（%.2f 秒）",
+                    audioURL.lastPathComponent,
+                    durationSeconds.isFinite ? durationSeconds : 0
+                )
+            )
+        } catch {
+            stopPlayback()
+            handleFailure("播放音频失败：\(error.localizedDescription)")
+        }
+    }
+
+    func isPlaying(_ message: ChatMessage) -> Bool {
+        playingMessageID == message.id
+    }
+
     private func prepareModel() async {
         sessionState = .loadingModel
 
@@ -138,6 +198,7 @@ final class ASRSessionViewModel: ObservableObject {
             sessionState = .recording
             inputSource = .microphone
             let recordingURL = try await audioRecorder.startRecording()
+            startRecordingMeterUpdates()
             appendUserMessage("开始录音：\(recordingURL.lastPathComponent)")
         } catch {
             handleFailure("启动录音失败：\(error.localizedDescription)")
@@ -146,10 +207,19 @@ final class ASRSessionViewModel: ObservableObject {
 
     private func stopRecordingAndTranscribe() async {
         do {
+            stopRecordingMeterUpdates()
             let recordedURL = try audioRecorder.stopRecording()
+            let localAudioURL = try createLocalPlaybackCopy(from: recordedURL)
+
+            appendUserMessage(
+                "录音输入：\(localAudioURL.lastPathComponent)",
+                audioURL: localAudioURL,
+                allowsPlayback: true
+            )
             appendUserMessage("停止录音，准备转写。")
-            await transcribeAudio(at: recordedURL, source: .microphone)
+            await transcribeAudio(at: localAudioURL, source: .microphone)
         } catch {
+            stopRecordingMeterUpdates()
             handleFailure("停止录音失败：\(error.localizedDescription)")
         }
     }
@@ -167,8 +237,21 @@ final class ASRSessionViewModel: ObservableObject {
             }
         }
 
-        appendUserMessage("文件输入：\(url.lastPathComponent)")
-        await transcribeAudio(at: url, source: .file)
+        let localAudioURL: URL
+
+        do {
+            localAudioURL = try createLocalPlaybackCopy(from: url)
+        } catch {
+            handleFailure("导入音频失败：\(error.localizedDescription)")
+            return
+        }
+
+        appendUserMessage(
+            "文件输入：\(url.lastPathComponent)",
+            audioURL: localAudioURL,
+            allowsPlayback: true
+        )
+        await transcribeAudio(at: localAudioURL, source: .file)
     }
 
     private func transcribeAudio(at url: URL, source: ASRInputSource) async {
@@ -199,19 +282,101 @@ final class ASRSessionViewModel: ObservableObject {
         messages.append(ChatMessage(role: .system, text: text))
     }
 
-    private func appendUserMessage(_ text: String) {
-        messages.append(ChatMessage(role: .user, text: text))
+    private func appendUserMessage(
+        _ text: String,
+        audioURL: URL? = nil,
+        allowsPlayback: Bool = false
+    ) {
+        messages.append(
+            ChatMessage(
+                role: .user,
+                text: text,
+                audioURL: audioURL,
+                allowsPlayback: allowsPlayback
+            )
+        )
     }
 
     private func appendASRMessage(_ text: String) {
         messages.append(ChatMessage(role: .asr, text: text))
     }
 
+    private func createLocalPlaybackCopy(from sourceURL: URL) throws -> URL {
+        let fileManager = FileManager.default
+        let destinationURL = fileManager.temporaryDirectory
+            .appendingPathComponent("imported-\(UUID().uuidString)")
+            .appendingPathExtension(sourceURL.pathExtension)
+
+        if fileManager.fileExists(atPath: destinationURL.path) {
+            try fileManager.removeItem(at: destinationURL)
+        }
+
+        try fileManager.copyItem(at: sourceURL, to: destinationURL)
+        return destinationURL
+    }
+
+    private func stopPlayback() {
+        audioPlayer?.stop()
+        audioPlayer = nil
+        playingMessageID = nil
+    }
+
+    private func startRecordingMeterUpdates() {
+        stopRecordingMeterUpdates()
+
+        recordingMeterTask = Task { [weak self] in
+            guard let self else { return }
+
+            while !Task.isCancelled {
+                self.recordingLevel = self.audioRecorder.normalizedPowerLevel()
+                self.recordingAveragePower = self.audioRecorder.averagePowerLevel()
+                self.recordingPeakPower = self.audioRecorder.peakPowerLevel()
+                self.recordingPeakHoldPower = max(self.recordingPeakHoldPower, self.recordingPeakPower)
+                try? await Task.sleep(for: .milliseconds(60))
+            }
+        }
+    }
+
+    private func stopRecordingMeterUpdates() {
+        recordingMeterTask?.cancel()
+        recordingMeterTask = nil
+        recordingLevel = 0
+        recordingAveragePower = -160
+        recordingPeakPower = -160
+        recordingPeakHoldPower = -160
+    }
+
     private func handleFailure(_ message: String) {
+        stopRecordingMeterUpdates()
         lastError = message
         sessionState = .failed(message)
         inputSource = .idle
         appendSystemMessage(message)
+    }
+
+    func sound(_ sound: NSSound, didFinishPlaying successfully: Bool) {
+        stopPlayback()
+
+        if !successfully {
+            handleFailure("播放音频失败：播放过程中断。")
+        }
+    }
+}
+
+private enum PlaybackError: LocalizedError {
+    case couldNotStart
+    case emptyFile
+    case unreadableFile
+
+    var errorDescription: String? {
+        switch self {
+        case .couldNotStart:
+            return "播放器未能启动。"
+        case .emptyFile:
+            return "音频文件为空。"
+        case .unreadableFile:
+            return "音频文件无法读取。"
+        }
     }
 }
 

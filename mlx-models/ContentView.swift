@@ -15,7 +15,7 @@ struct ContentView: View {
         VStack(spacing: 0) {
             StatusHeader(viewModel: viewModel)
             Divider()
-            MessageList(messages: viewModel.messages)
+            MessageList(viewModel: viewModel)
             Divider()
             ControlBar(viewModel: viewModel)
         }
@@ -82,17 +82,21 @@ private struct StatusChip: View {
 }
 
 private struct MessageList: View {
-    let messages: [ChatMessage]
+    @ObservedObject var viewModel: ASRSessionViewModel
 
     var body: some View {
         ScrollViewReader { proxy in
             ScrollView {
                 LazyVStack(spacing: 16) {
-                    if messages.isEmpty {
+                    if viewModel.messages.isEmpty {
                         EmptyState()
                     } else {
-                        ForEach(messages) { message in
-                            MessageRow(message: message)
+                        ForEach(viewModel.messages) { message in
+                            MessageRow(
+                                message: message,
+                                isPlaying: viewModel.isPlaying(message),
+                                onTogglePlayback: { viewModel.togglePlayback(for: message) }
+                            )
                                 .id(message.id)
                         }
                     }
@@ -100,8 +104,8 @@ private struct MessageList: View {
                 .padding(24)
             }
             .background(Color(red: 0.97, green: 0.97, blue: 0.97))
-            .onChange(of: messages.count) { _, _ in
-                guard let lastMessage = messages.last else { return }
+            .onChange(of: viewModel.messages.count) { _, _ in
+                guard let lastMessage = viewModel.messages.last else { return }
                 withAnimation(.easeOut(duration: 0.2)) {
                     proxy.scrollTo(lastMessage.id, anchor: .bottom)
                 }
@@ -137,6 +141,8 @@ private struct EmptyState: View {
 
 private struct MessageRow: View {
     let message: ChatMessage
+    let isPlaying: Bool
+    let onTogglePlayback: () -> Void
 
     private var alignment: HorizontalAlignment {
         message.role == .user ? .trailing : .leading
@@ -166,9 +172,16 @@ private struct MessageRow: View {
 
     var body: some View {
         VStack(alignment: alignment, spacing: 6) {
-            Text(title)
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(Color.secondary)
+            HStack(spacing: 8) {
+                Text(title)
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(Color.secondary)
+
+                if message.allowsPlayback {
+                    Button(isPlaying ? "停止播放" : "播放录音", action: onTogglePlayback)
+                        .buttonStyle(AudioActionButtonStyle())
+                }
+            }
 
             Text(message.text)
                 .font(.system(size: 15))
@@ -189,6 +202,20 @@ private struct MessageRow: View {
     }
 }
 
+private struct AudioActionButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.system(size: 12, weight: .medium))
+            .foregroundStyle(Color.black)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(
+                Capsule()
+                    .fill(Color.black.opacity(configuration.isPressed ? 0.08 : 0.05))
+            )
+    }
+}
+
 private struct ControlBar: View {
     @ObservedObject var viewModel: ASRSessionViewModel
 
@@ -206,6 +233,14 @@ private struct ControlBar: View {
             .buttonStyle(SecondaryButtonStyle(isActive: viewModel.isRecording))
             .disabled(viewModel.isTranscribing)
 
+            RecordingLevelView(
+                level: viewModel.recordingLevel,
+                averagePower: viewModel.recordingAveragePower,
+                peakPower: viewModel.recordingPeakPower,
+                peakHoldPower: viewModel.recordingPeakHoldPower,
+                isActive: viewModel.isRecording
+            )
+
             Spacer(minLength: 12)
 
             Button("清空会话") {
@@ -216,6 +251,65 @@ private struct ControlBar: View {
         }
         .padding(20)
         .background(Color.white)
+    }
+}
+
+private struct RecordingLevelView: View {
+    let level: Double
+    let averagePower: Float
+    let peakPower: Float
+    let peakHoldPower: Float
+    let isActive: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 10) {
+                Text("振幅")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(Color.secondary)
+
+                GeometryReader { geometry in
+                    ZStack(alignment: .leading) {
+                        Capsule()
+                            .fill(Color.black.opacity(0.08))
+
+                        Capsule()
+                            .fill(
+                                LinearGradient(
+                                    colors: [
+                                        Color(red: 0.19, green: 0.62, blue: 0.34),
+                                        Color(red: 0.95, green: 0.69, blue: 0.16),
+                                        Color(red: 0.85, green: 0.24, blue: 0.20)
+                                    ],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                            .frame(width: max(6, geometry.size.width * level))
+                            .opacity(isActive ? 1 : 0.25)
+                    }
+                }
+                .frame(width: 120, height: 10)
+            }
+
+            Text("平均 \(formatted(averagePower)) dB  峰值 \(formatted(peakPower)) dB  峰值保持 \(formatted(peakHoldPower)) dB")
+                .font(.system(size: 11, weight: .medium))
+                .foregroundStyle(Color.secondary)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(Color.black.opacity(0.03))
+        )
+    }
+
+    private func formatted(_ value: Float) -> String {
+        if value <= -160 {
+            return "-inf"
+        }
+
+        return String(format: "%.1f", value)
     }
 }
 
