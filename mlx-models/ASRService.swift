@@ -146,20 +146,11 @@ private enum AudioPreprocessor {
             .appendingPathComponent("extracted-\(UUID().uuidString)")
             .appendingPathExtension("m4a")
 
-        exportSession.outputURL = outputURL
-        exportSession.outputFileType = .m4a
-
-        return try await withCheckedThrowingContinuation { continuation in
-            exportSession.exportAsynchronously {
-                switch exportSession.status {
-                case .completed:
-                    continuation.resume(returning: outputURL)
-                case .failed, .cancelled:
-                    continuation.resume(throwing: ASRServiceError.audioPreparationFailed(exportSession.error?.localizedDescription ?? "导出音频失败。"))
-                default:
-                    continuation.resume(throwing: ASRServiceError.audioPreparationFailed("导出音频失败。"))
-                }
-            }
+        do {
+            try await exportSession.export(to: outputURL, as: .m4a)
+            return outputURL
+        } catch {
+            throw ASRServiceError.audioPreparationFailed(error.localizedDescription)
         }
     }
 }

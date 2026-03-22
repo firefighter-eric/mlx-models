@@ -133,6 +133,16 @@ final class ASRSessionViewModel: NSObject, ObservableObject, NSSoundDelegate {
             return
         }
 
+        Task {
+            await startPlayback(for: message, audioURL: audioURL)
+        }
+    }
+
+    func isPlaying(_ message: ChatMessage) -> Bool {
+        playingMessageID == message.id
+    }
+
+    private func startPlayback(for message: ChatMessage, audioURL: URL) async {
         do {
             stopPlayback()
 
@@ -142,7 +152,8 @@ final class ASRSessionViewModel: NSObject, ObservableObject, NSSoundDelegate {
             }
 
             let asset = AVURLAsset(url: audioURL)
-            let durationSeconds = CMTimeGetSeconds(asset.duration)
+            let duration = try await asset.load(.duration)
+            let durationSeconds = CMTimeGetSeconds(duration)
 
             guard let player = NSSound(contentsOf: audioURL, byReference: false) else {
                 throw PlaybackError.unreadableFile
@@ -168,10 +179,6 @@ final class ASRSessionViewModel: NSObject, ObservableObject, NSSoundDelegate {
             stopPlayback()
             handleFailure("播放音频失败：\(error.localizedDescription)")
         }
-    }
-
-    func isPlaying(_ message: ChatMessage) -> Bool {
-        playingMessageID == message.id
     }
 
     private func prepareModel() async {
