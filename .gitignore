@@ -1,0 +1,5 @@
+mlx-models/Models
+build/
+.venv/
+.DS_Store
+*.xcuserdatad

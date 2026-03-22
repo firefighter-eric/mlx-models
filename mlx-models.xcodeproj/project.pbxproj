@@ -6,23 +6,40 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		07D4D5A02F70420F0029AEBA /* mlx_modelsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07D4D5A42F70420F0029AEBA /* mlx_modelsApp.swift */; };
+		07D4D5A12F70420F0029AEBA /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07D4D5A52F70420F0029AEBA /* ContentView.swift */; };
+		07D4D5A22F70420F0029AEBA /* ModelLocator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07D4D5A62F70420F0029AEBA /* ModelLocator.swift */; };
+		07D4D5A32F70420F0029AEBA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 07D4D5A72F70420F0029AEBA /* Assets.xcassets */; };
+		07D4D5B02F70420F0029AEBA /* ChatMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07D4D5B42F70420F0029AEBA /* ChatMessage.swift */; };
+		07D4D5B12F70420F0029AEBA /* ASRSessionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07D4D5B52F70420F0029AEBA /* ASRSessionViewModel.swift */; };
+		07D4D5B22F70420F0029AEBA /* AudioRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07D4D5B62F70420F0029AEBA /* AudioRecorder.swift */; };
+		07D4D5B32F70420F0029AEBA /* ASRService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07D4D5B72F70420F0029AEBA /* ASRService.swift */; };
+		07D4D5B82F70420F0029AEBA /* MLXAudioCore in Frameworks */ = {isa = PBXBuildFile; productRef = 07D4D5BD2F70420F0029AEBA /* MLXAudioCore */; };
+		07D4D5B92F70420F0029AEBA /* MLXAudioSTT in Frameworks */ = {isa = PBXBuildFile; productRef = 07D4D5BE2F70420F0029AEBA /* MLXAudioSTT */; };
+		07D4D5BA2F70420F0029AEBA /* HuggingFace in Frameworks */ = {isa = PBXBuildFile; productRef = 07D4D5BF2F70420F0029AEBA /* HuggingFace */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		071349462F70420F0029AEBA /* mlx-models.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "mlx-models.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		07D4D5A42F70420F0029AEBA /* mlx_modelsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = mlx_modelsApp.swift; sourceTree = "<group>"; };
+		07D4D5A52F70420F0029AEBA /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		07D4D5A62F70420F0029AEBA /* ModelLocator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelLocator.swift; sourceTree = "<group>"; };
+		07D4D5A72F70420F0029AEBA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		07D4D5B42F70420F0029AEBA /* ChatMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatMessage.swift; sourceTree = "<group>"; };
+		07D4D5B52F70420F0029AEBA /* ASRSessionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ASRSessionViewModel.swift; sourceTree = "<group>"; };
+		07D4D5B62F70420F0029AEBA /* AudioRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioRecorder.swift; sourceTree = "<group>"; };
+		07D4D5B72F70420F0029AEBA /* ASRService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ASRService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
-
-/* Begin PBXFileSystemSynchronizedRootGroup section */
-		071349482F70420F0029AEBA /* mlx-models */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "mlx-models";
-			sourceTree = "<group>";
-		};
-/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		071349432F70420F0029AEBA /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				07D4D5BA2F70420F0029AEBA /* HuggingFace in Frameworks */,
+				07D4D5B82F70420F0029AEBA /* MLXAudioCore in Frameworks */,
+				07D4D5B92F70420F0029AEBA /* MLXAudioSTT in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -45,6 +62,21 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		071349482F70420F0029AEBA /* mlx-models */ = {
+			isa = PBXGroup;
+			children = (
+				07D4D5A72F70420F0029AEBA /* Assets.xcassets */,
+				07D4D5B72F70420F0029AEBA /* ASRService.swift */,
+				07D4D5B52F70420F0029AEBA /* ASRSessionViewModel.swift */,
+				07D4D5B62F70420F0029AEBA /* AudioRecorder.swift */,
+				07D4D5B42F70420F0029AEBA /* ChatMessage.swift */,
+				07D4D5A52F70420F0029AEBA /* ContentView.swift */,
+				07D4D5A62F70420F0029AEBA /* ModelLocator.swift */,
+				07D4D5A42F70420F0029AEBA /* mlx_modelsApp.swift */,
+			);
+			path = "mlx-models";
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -55,16 +87,17 @@
 				071349422F70420F0029AEBA /* Sources */,
 				071349432F70420F0029AEBA /* Frameworks */,
 				071349442F70420F0029AEBA /* Resources */,
+				07D4D5AF2F70420F0029AEBA /* Bundle Selected MLX Model */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
-			fileSystemSynchronizedGroups = (
-				071349482F70420F0029AEBA /* mlx-models */,
-			);
 			name = "mlx-models";
 			packageProductDependencies = (
+				07D4D5BD2F70420F0029AEBA /* MLXAudioCore */,
+				07D4D5BE2F70420F0029AEBA /* MLXAudioSTT */,
+				07D4D5BF2F70420F0029AEBA /* HuggingFace */,
 			);
 			productName = "mlx-models";
 			productReference = 071349462F70420F0029AEBA /* mlx-models.app */;
@@ -98,6 +131,10 @@
 			productRefGroup = 071349472F70420F0029AEBA /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
+			packageReferences = (
+				07D4D5BB2F70420F0029AEBA /* XCRemoteSwiftPackageReference "mlx-audio-swift" */,
+				07D4D5BC2F70420F0029AEBA /* XCRemoteSwiftPackageReference "swift-huggingface" */,
+			);
 			targets = (
 				071349452F70420F0029AEBA /* mlx-models */,
 			);
@@ -109,20 +146,88 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				07D4D5A32F70420F0029AEBA /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		07D4D5AF2F70420F0029AEBA /* Bundle Selected MLX Model */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(MODEL_ROOT)/$(MODEL_ORG)/$(MODEL_NAME)",
+			);
+			name = "Bundle Selected MLX Model";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/Model",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -euo pipefail\n\nMODEL_ROOT_EXPANDED=\"${MODEL_ROOT/#\\~/$HOME}\"\nMODEL_SOURCE=\"$MODEL_ROOT_EXPANDED/$MODEL_ORG/$MODEL_NAME\"\nBUNDLE_RESOURCES_DIR=\"$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH\"\nBUNDLED_MODEL_DIR=\"$BUNDLE_RESOURCES_DIR/Model\"\n\nif [ ! -d \"$MODEL_SOURCE\" ]; then\n  echo \"error: MLX model directory does not exist: $MODEL_SOURCE\"\n  echo \"error: Current settings MODEL_ROOT=$MODEL_ROOT MODEL_ORG=$MODEL_ORG MODEL_NAME=$MODEL_NAME\"\n  exit 1\nfi\n\nmkdir -p \"$BUNDLE_RESOURCES_DIR\"\nrm -rf \"$BUNDLED_MODEL_DIR\"\ncp -R \"$MODEL_SOURCE\" \"$BUNDLED_MODEL_DIR\"\n\necho \"Bundled MLX model from $MODEL_SOURCE\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		071349422F70420F0029AEBA /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				07D4D5B32F70420F0029AEBA /* ASRService.swift in Sources */,
+				07D4D5B22F70420F0029AEBA /* AudioRecorder.swift in Sources */,
+				07D4D5B12F70420F0029AEBA /* ASRSessionViewModel.swift in Sources */,
+				07D4D5B02F70420F0029AEBA /* ChatMessage.swift in Sources */,
+				07D4D5A12F70420F0029AEBA /* ContentView.swift in Sources */,
+				07D4D5A22F70420F0029AEBA /* ModelLocator.swift in Sources */,
+				07D4D5A02F70420F0029AEBA /* mlx_modelsApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		07D4D5BB2F70420F0029AEBA /* XCRemoteSwiftPackageReference "mlx-audio-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Blaizzy/mlx-audio-swift.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.1.2;
+			};
+		};
+		07D4D5BC2F70420F0029AEBA /* XCRemoteSwiftPackageReference "swift-huggingface" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/huggingface/swift-huggingface.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.8.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		07D4D5BD2F70420F0029AEBA /* MLXAudioCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 07D4D5BB2F70420F0029AEBA /* XCRemoteSwiftPackageReference "mlx-audio-swift" */;
+			productName = MLXAudioCore;
+		};
+		07D4D5BE2F70420F0029AEBA /* MLXAudioSTT */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 07D4D5BB2F70420F0029AEBA /* XCRemoteSwiftPackageReference "mlx-audio-swift" */;
+			productName = MLXAudioSTT;
+		};
+		07D4D5BF2F70420F0029AEBA /* HuggingFace */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 07D4D5BC2F70420F0029AEBA /* XCRemoteSwiftPackageReference "swift-huggingface" */;
+			productName = HuggingFace;
+		};
+/* End XCSwiftPackageProductDependency section */
 
 /* Begin XCBuildConfiguration section */
 		0713494F2F7042110029AEBA /* Debug */ = {
@@ -251,16 +356,23 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = MK6NL9X2NK;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_ASRModelRepository = "$(MODEL_ORG)/$(MODEL_NAME)";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "需要访问麦克风来录音并在本地进行语音识别。";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
+				MODEL_NAME = "Qwen3-ASR-0.6B-4bit";
+				MODEL_ORG = "mlx-community";
+				MODEL_ROOT = "$(HOME)/models";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.tiger.mlx-models";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -281,16 +393,23 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = MK6NL9X2NK;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_ASRModelRepository = "$(MODEL_ORG)/$(MODEL_NAME)";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "需要访问麦克风来录音并在本地进行语音识别。";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
+				MODEL_NAME = "Qwen3-ASR-0.6B-4bit";
+				MODEL_ORG = "mlx-community";
+				MODEL_ROOT = "$(HOME)/models";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.tiger.mlx-models";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
